@@ -50,10 +50,19 @@ public class UserService {
 	}
 
 	public UserDto getUserById(Long userId) {
+		// Retrieve the optional user entity from the repository
 		Optional<UserEntity> userOptional = userRepository.findById(userId);
-		UserEntity user = userOptional.get();
-		return userMapper.toDto(user);
 
+		// Check if the optional contains a value
+		if (userOptional.isPresent()) {
+			// If a user entity is found, retrieve it and return its DTO
+			UserEntity user = userOptional.get();
+			return userMapper.toDto(user);
+		} else {
+			// If no user entity is found with the given ID, return null or throw an exception as per your requirement
+			log.error("User with ID " + userId + " not found");
+			return null;
+		}
 	}
 
 	public List<UserDto> getAllUsers() {
@@ -77,36 +86,37 @@ public class UserService {
 
 	public UserDto saveUserwithAccess(UserDto userentityrequest, UserRole usertype, Long id, String username,
 			String password) {
-		Boolean flag = false;
 		if (usertype != UserRole.ADMIN) {
 			log.error("usertype is not admin");
-			flag = true;
+			return null;
 		}
+
 		Optional<UserEntity> userOptional = userRepository.findById(id);
-		UserEntity user = userOptional.get();
-		if (user.getUserId() != (id)) {
-			flag = true;
+		if (userOptional.isEmpty()) {
 			log.error("ADMIN with ID " + id + " not present");
+			return null;
 		}
+
+		UserEntity user = userOptional.get();
 		if (user.getRole() != UserRole.ADMIN) {
-			flag = true;
 			log.error("User with the ID " + id + " is not an admin user.");
+			return null;
 		}
 		if (!user.getUsername().equals(username)) {
-			flag = true;
 			log.error("user with username" + username + "not found");
+			return null;
 		}
 		if (!user.getPassword().equals(password)) {
-			flag = true;
 			log.error("Password of ADMIN is incorrect");
+			return null;
 		}
-		if (Boolean.FALSE.equals(flag)) {
-			UserEntity userEntity = userMapper.toEntity(userentityrequest);
-			userRepository.save(userEntity);
-			log.info("user entity saved");
-			return userMapper.toDto(userEntity);
-		}
-		return null;
+
+		// If all conditions are met, save the userEntity and return corresponding DTO
+		UserEntity userEntity = userMapper.toEntity(userentityrequest);
+		userEntity.setUserId(id); // Assuming you want to update the existing user
+		userEntity = userRepository.save(userEntity);
+		log.info("user entity saved");
+		return userMapper.toDto(userEntity);
 	}
 
 	public CourseDto saveCoursewithAccess(CourseDto courserequest, UserRole usertype, Long id, String username,

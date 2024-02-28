@@ -34,8 +34,15 @@ public class CourseService {
 
 	public CourseDto getCourseById(long courseId) {
 		Optional<CourseEntity> courseOptional = courserepository.findById(courseId);
-		CourseEntity course = courseOptional.get();
-		return courseMapper.toDto(course);
+
+		if (courseOptional.isPresent()) {
+			CourseEntity course = courseOptional.get();
+			return courseMapper.toDto(course);
+		} else {
+
+			log.error("User with ID " + courseId + " not found");
+			return null;
+		}
 	}
 
 	public List<CourseDto> getAllCourses() {
@@ -46,7 +53,7 @@ public class CourseService {
 	public CourseDto updateCourse(CourseDto dto, Long id) {
 		Optional<CourseEntity> checkExistingCourse = courserepository.findById(id);
 		if (!checkExistingCourse.isPresent())
-			log.error("Course Id " + id + " Not Found!");
+			throw new IllegalArgumentException("Course Id " + id + " Not Found!");
 		CourseEntity entity = courseMapper.toEntity(dto);
 		courserepository.save(entity);
 		return courseMapper.toDto(entity);

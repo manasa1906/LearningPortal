@@ -12,6 +12,9 @@ import com.example.learningportal.entities.FavouriteEntity;
 import com.example.learningportal.mappers.FavouriteMapper;
 import com.example.learningportal.repository.FavouriteRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class FavouriteService {
 	@Autowired
@@ -29,9 +32,16 @@ public class FavouriteService {
 	}
 
 	public FavouriteDto getFavouriteById(Long favouriteId) {
-		Optional<FavouriteEntity> FavouriteOptional = favouriteRepository.findById(favouriteId);
-		FavouriteEntity Favourite = FavouriteOptional.get();
-		return favouriteMapper.toDto(Favourite);
+		Optional<FavouriteEntity> favouriteOptional = favouriteRepository.findById(favouriteId);
+
+		if (favouriteOptional.isPresent()) {
+			FavouriteEntity favourite = favouriteOptional.get();
+			return favouriteMapper.toDto(favourite);
+		} else {
+
+			log.error("Favourite with ID " + favouriteId + " not found");
+			return null;
+		}
 	}
 
 	public List<FavouriteDto> getAllFavourites() {
@@ -42,9 +52,5 @@ public class FavouriteService {
 	public void deleteFavourite(Long id) {
 		favouriteRepository.deleteById(id);
 	}
-
-	/*public List<FavouriteDto> getFavouritesByUserId(Long userId) {
-		return favouriteRepository.findFavouritesByUserId(userId);
-	}*/
 
 }

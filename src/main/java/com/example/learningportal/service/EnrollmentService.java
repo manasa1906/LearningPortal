@@ -12,6 +12,9 @@ import com.example.learningportal.entities.EnrollmentEntity;
 import com.example.learningportal.mappers.EnrollmentMapper;
 import com.example.learningportal.repository.EnrollmentRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class EnrollmentService {
 	@Autowired
@@ -29,9 +32,16 @@ public class EnrollmentService {
 	}
 
 	public EnrollmentDto getEnrollmentById(Long enrollmentId) {
-		Optional<EnrollmentEntity> enrollmentOptional = enrollmentRepository.findById(enrollmentId);
-		EnrollmentEntity Enrollment = enrollmentOptional.get();
-		return enrollmentMapper.toDto(Enrollment);
+		Optional<EnrollmentEntity> EnrollmentOptional = enrollmentRepository.findById(enrollmentId);
+
+		if (EnrollmentOptional.isPresent()) {
+			EnrollmentEntity course = EnrollmentOptional.get();
+			return enrollmentMapper.toDto(course);
+		} else {
+
+			log.error("Enrollment with ID " + enrollmentId + " not found");
+			return null;
+		}
 	}
 
 	public List<EnrollmentDto> getAllEnrollments() {
