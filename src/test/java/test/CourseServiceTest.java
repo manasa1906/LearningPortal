@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -49,20 +48,24 @@ class CourseServiceTest {
 	void setUp() {
 		userEntity = new UserEntity();
 		userEntity.setUserId(1L);
-		userEntity.setUsername("testUser");
-		userEntity.setPassword("password");
+		//userEntity.setUsername("testUser");
+		//userEntity.setPassword("password");
 
 		categoryEntity = new CategoryEntity();
 		categoryEntity.setCategoryId(1L);
-		categoryEntity.setName("TestCategory");
+		//categoryEntity.setName("TestCategory");
 
 		courseEntity = new CourseEntity();
 		courseEntity.setCourseId(1L);
 		courseEntity.setTitle("Test Course");
 		courseEntity.setUserId(userEntity);
 		courseEntity.setCategoryId(categoryEntity);
-		courseEntity.setCreatedOn(LocalDateTime.now());
-		courseEntity.setUpdatedOn(LocalDateTime.now());
+
+		courseEntity = new CourseEntity();
+		courseEntity.setCourseId(1L);
+		courseEntity.setTitle("Test Course");
+		courseEntity.setUserId(userEntity);
+		courseEntity.setCategoryId(categoryEntity);
 
 		courseDto = new CourseDto();
 		courseDto.setCourseId(1L);
@@ -116,10 +119,11 @@ class CourseServiceTest {
 	}
 
 	@Test
-	void testUpdateCourse_CourseExists() {
-
+	void UpdateCourse_CourseExists() {
 		when(courseRepository.findById(1L)).thenReturn(Optional.of(courseEntity));
-		when(courseRepository.save(any())).thenReturn(courseEntity);
+		when(courseMapper.toEntity(courseDto)).thenReturn(courseEntity);
+		when(courseRepository.save(courseEntity)).thenReturn(courseEntity);
+		when(courseMapper.toDto(courseEntity)).thenReturn(courseDto);
 
 		CourseDto updatedCourse = courseService.updateCourse(courseDto, 1L);
 

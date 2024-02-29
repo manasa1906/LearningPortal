@@ -28,7 +28,7 @@ import com.example.learningportal.repository.EnrollmentRepository;
 import com.example.learningportal.service.EnrollmentService;
 
 @ExtendWith(MockitoExtension.class)
-public class EnrollmentServiceTest {
+class EnrollmentServiceTest {
 
 	@Mock
 	private EnrollmentRepository enrollmentRepository;
@@ -71,6 +71,7 @@ public class EnrollmentServiceTest {
 	}
 
 	@Test
+
 	void testSaveEnrollment() {
 		when(enrollmentMapper.toEntity(enrollmentDto)).thenReturn(enrollmentEntity);
 		when(enrollmentRepository.save(any())).thenReturn(enrollmentEntity);
@@ -92,6 +93,7 @@ public class EnrollmentServiceTest {
 	}
 
 	@Test
+
 	void testGetEnrollmentById_EnrollmentNotExists() {
 		when(enrollmentRepository.findById(2L)).thenReturn(Optional.empty());
 
@@ -101,6 +103,7 @@ public class EnrollmentServiceTest {
 	}
 
 	@Test
+
 	void testGetAllEnrollments() {
 		List<EnrollmentEntity> enrollmentEntities = new ArrayList<>();
 		enrollmentEntities.add(enrollmentEntity);

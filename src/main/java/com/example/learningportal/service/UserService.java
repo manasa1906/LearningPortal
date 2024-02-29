@@ -161,6 +161,12 @@ public class UserService {
 			flag = true;
 		}
 		Optional<UserEntity> userOptional = userRepository.findById(id);
+
+		if (userOptional.isEmpty()) {
+			log.error("User with ID " + id + " not found.");
+			return null; // or throw an exception, depending on your requirements
+		}
+
 		UserEntity user = userOptional.get();
 		if (user.getUserId() != (id)) {
 			log.error("AUTHOR with ID " + id + "isn't found.");

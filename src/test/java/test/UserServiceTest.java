@@ -34,7 +34,7 @@ import com.example.learningportal.service.CourseService;
 import com.example.learningportal.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+class UserServiceTest {
 
 	@Mock
 	private UserRepository userRepository;
@@ -250,18 +250,11 @@ public class UserServiceTest {
 	@Test
 	void testSaveCoursewithAccess_AuthorAccess_Success() {
 		when(userRepository.findById(anyLong())).thenReturn(Optional.of(anotherUserEntity));
-		// Mock the behavior of courseMapper.toEntity() to return the courseEntity
 		when(courseMapper.toEntity(courseDto)).thenReturn(courseEntity);
-		// Mock the behavior of courseRepository.save() to return the courseEntity
 		when(courseRepository.save(courseEntity)).thenReturn(courseEntity);
-		// Mock the behavior of courseMapper.toDto() to return the courseDto
 		when(courseMapper.toDto(courseEntity)).thenReturn(courseDto);
-
-		// Attempt to save the course with correct user credentials
 		CourseDto savedCourse = userService.saveCoursewithAccess(courseDto, UserRole.AUTHOR, 2L, "anotherUser",
 				"anotherPassword");
-
-		// Verify that the returned CourseDto object is equal to the expected courseDto
 		assertEquals(courseDto, savedCourse);
 	}
 
@@ -271,7 +264,7 @@ public class UserServiceTest {
 	//		when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 	//
 	//		// Attempt to save the course with a non-existent user ID
-	//		CourseDto savedCourse = userService.saveCoursewithAccess(courseDto, UserRole.AUTHOR, 3L, "anotherUser",
+	//		CourseDto savedCourse = userService.saveCoursewithAccess(courseDto, UserRole.AUTHOR, 2L, "anotherUser",
 	//				"anotherPassword");
 	//
 	//		// Verify that the returned CourseDto object is null
@@ -305,4 +298,166 @@ public class UserServiceTest {
 		CourseDto savedCourse = userService.saveCoursewithAccess(courseDto, UserRole.ADMIN, 1L, "testUser", "password");
 		assertNull(savedCourse);
 	}
+
+	/*	@Test
+		void testUpdateCoursewithAccess_AUTHORAccess_Success() {
+	
+			when(userRepository.findById(anyLong())).thenReturn(Optional.of(userEntity));
+			when(courseRepository.findById(anyLong())).thenReturn(Optional.of(courseEntity));
+			when(courseMapper.toEntity(courseDto)).thenReturn(courseEntity);
+			when(courseMapper.toDto(courseEntity)).thenReturn(courseDto);
+			CourseDto result = userService.updateCoursewithAccess(courseDto, UserRole.AUTHOR, 2L, "anotherUser",
+					"anotherPassword", 2L);
+			assertNotNull(result);
+			assertEquals(courseDto, result);
+			verify(courseRepository).save(courseEntity);
+		}*/
+
+	@Test
+	void testUpdateCoursewithAccess_AuthorAccess_Failure() {
+		CourseDto courseDto = new CourseDto();
+		UserRole userRole = UserRole.ADMIN;
+		Long userId = 1L;
+		String username = "testUser";
+		String password = "password";
+		long courseId = 1L;
+
+		UserEntity userEntity = new UserEntity();
+		userEntity.setUserId(userId);
+		userEntity.setUsername(username);
+		userEntity.setPassword(password);
+		userEntity.setRole(UserRole.ADMIN);
+
+		when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
+
+		CourseDto result = userService.updateCoursewithAccess(courseDto, userRole, userId, username, password,
+				courseId);
+
+		assertNull(result);
+
+	}
+
+	@Test
+	void testUpdateCoursewithAccess_UserNotFound() {
+		// Mock data
+		CourseDto courseDto = new CourseDto();
+		UserRole userRole = UserRole.AUTHOR;
+		Long userId = 999L;
+		String username = "testUser";
+		String password = "password";
+		long courseId = 1L;
+
+		when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+		CourseDto result = userService.updateCoursewithAccess(courseDto, userRole, userId, username, password,
+				courseId);
+
+		assertNull(result);
+	}
+
+	@Test
+	void testEnrollmentwithAccess_LearnerAccess_Success() {
+		// Mock data
+		UserRole role = UserRole.LEARNER;
+		Long userId = 1L;
+		String username = "learnerUser";
+		String password = "password";
+		long courseId = 1L;
+
+		UserEntity userEntity = new UserEntity();
+		userEntity.setUserId(userId);
+		userEntity.setUsername(username);
+		userEntity.setPassword(password);
+		userEntity.setRole(UserRole.LEARNER);
+
+		CourseEntity courseEntity = new CourseEntity();
+		courseEntity.setCourseId(courseId);
+
+		when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
+		when(courseRepository.findById(courseId)).thenReturn(Optional.of(courseEntity));
+
+		// Call the method
+		String result = userService.enrollmentwithAccess(role, userId, username, password, courseId);
+
+		// Assertions
+		assertNotNull(result);
+		assertEquals("User enrolled to the course", result);
+
+	}
+
+	@Test
+	void testEnrollmentwithAccess_InvalidUserRole() {
+		// Mock data
+		UserRole role = UserRole.ADMIN; // Not a learner role
+		Long userId = 1L;
+		String username = "learnerUser";
+		String password = "password";
+		long courseId = 1L;
+
+		// Mocking userRepository.findById() to return a valid user
+		UserEntity userEntity = new UserEntity();
+		userEntity.setUserId(userId);
+		userEntity.setUsername(username);
+		userEntity.setPassword(password);
+		userEntity.setRole(UserRole.ADMIN); // User role is not learner
+
+		when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
+
+		// Call the method
+		String result = userService.enrollmentwithAccess(role, userId, username, password, courseId);
+
+		// Assertions
+		assertEquals("There was an error", result);
+	}
+
+	@Test
+	void testEnrollmentwithAccess_IncorrectUsername() {
+		// Mock data
+		UserRole role = UserRole.LEARNER;
+		Long userId = 1L;
+		String username = "incorrectUsername";
+		String password = "password";
+		long courseId = 1L;
+
+		// Mocking userRepository.findById() to return a valid user
+		UserEntity userEntity = new UserEntity();
+		userEntity.setUserId(userId);
+		userEntity.setUsername("learnerUser"); // Correct username
+		userEntity.setPassword(password);
+		userEntity.setRole(UserRole.LEARNER);
+
+		when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
+
+		// Call the method
+		String result = userService.enrollmentwithAccess(role, userId, username, password, courseId);
+
+		// Assertions
+		assertEquals("There was an error", result);
+	}
+
+	@Test
+	void testEnrollmentwithAccess_IncorrectPassword() {
+		// Mock data
+		UserRole role = UserRole.LEARNER;
+		Long userId = 1L;
+		String username = "learnerUser";
+		String password = "incorrectPassword";
+		long courseId = 1L;
+
+		// Mocking userRepository.findById() to return a valid user
+		UserEntity userEntity = new UserEntity();
+		userEntity.setUserId(userId);
+		userEntity.setUsername(username);
+		userEntity.setPassword("password"); // Correct password
+		userEntity.setRole(UserRole.LEARNER);
+
+		when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
+
+		// Call the method
+		String result = userService.enrollmentwithAccess(role, userId, username, password, courseId);
+
+		// Assertions
+		assertEquals("There was an error", result);
+	}
+
 }
